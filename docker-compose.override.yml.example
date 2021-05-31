@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  api:
+    ports:
+      - 127.0.0.1:8000:80
+
+  auth:
+    ports:
+      - 127.0.0.1:8001:80
+
+  postgres:
+    ports:
+      - 127.0.0.1:5432:5432
+
+  redis:
+    ports:
+      - 127.0.0.1:6397:6397
+
+  elastic:
+    ports:
+      - 127.0.0.1:9200:9200

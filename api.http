@@ -1,0 +1,55 @@
+# -*- restclient -*-
+
+:client_api = /client/api/v1
+:staff_api = /staff/api/v1
+
+# Создание пользователя и вход
+POST :client_api/auth/signup
+# Просмотр профиля
+GET :client_api/profile
+# Редактирование профила
+PUT :client_api/profile
+
+
+# Создание нового токена при регистрации
+POST :client_api/auth/signup
+# Вход
+POST :client_api/auth/login
+# Выход
+POST :client_ap/auth/logout
+# Обновление токета
+POST :client_api/auth/refresh
+
+
+# История входов
+GET :client_api/auth/history?page=1&size=10
+# Response
+[
+    {
+        "timestampt": "1233",
+        "action": "login/logout",
+        "device": "Firefox 86.0"
+    }
+]
+
+# Просмотр профиля
+GET :client_api/profile
+# Response
+{
+    "email": "test@test.ru"
+}
+
+# Редактирование профила
+PUT :client_api/profile
+# Request
+{
+    "email": "new@test.ru"
+    "password": "new secret password"
+}
+
+# Проверка валидности токена
+POST :staff_api/validate
+# Request
+{
+    "access_token": "acess_token"
+}

@@ -1,0 +1,12 @@
+Flask==1.1.4
+Flask-SQLAlchemy
+gunicorn
+flask-restx
+pydantic
+black
+isort
+redis
+pyjwt
+psycopg2-binary
+passlib
+user-agents
