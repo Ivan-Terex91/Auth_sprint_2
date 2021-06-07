@@ -1,12 +1,13 @@
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Tuple
+from typing import List, Optional, Tuple
 from uuid import UUID
 
 import jwt
 
-from core.db import RefreshToken
+from core.db import OAuthAccount, RefreshToken
+from core.enums import OAuthProvider
 from core.exceptions import AuthError, NotFound
 
 ACCESS_TOKEN_INTERVAL = 3600  # 1 hour
@@ -22,6 +23,10 @@ class RefreshTokenExpired(AuthError):
 
 
 class AccessTokenRevoked(AuthError):
+    pass
+
+
+class OAuthAccountNotFound(NotFound):
     pass
 
 
@@ -138,3 +143,48 @@ class TokenService:
             return
 
         return self.redis.setex(access_token.token, access_token.exp - now, 1)
+
+
+class OAuthService:
+    def __init__(self, session):
+        self.session = session
+
+    def create(self, **kwargs) -> OAuthAccount:
+        account = OAuthAccount(**kwargs)
+        self.session.add(account)
+        return account
+
+    def update(self, id: UUID, **kwargs):
+        return self.session.query(OAuthAccount).filter(OAuthAccount.id == id).update(kwargs)
+
+    def delete(self, oauth_account: OAuthAccount):
+        return self.session.delete(oauth_account)
+
+    def get_by_user_id(
+        self, provider: OAuthProvider, user_id: str, raise_exception=False
+    ) -> Optional[OAuthAccount]:
+        oauth_account = (
+            self.session.query(OAuthAccount)
+            .filter(OAuthAccount.provider == provider, OAuthAccount.user_id == user_id)
+            .first()
+        )
+        if raise_exception:
+            raise OAuthAccountNotFound("Not found facebook oauth account")
+
+        return oauth_account
+
+    def get_by_account_id(
+        self, provider: OAuthProvider, account_id: str, raise_exception=False
+    ) -> Optional[OAuthAccount]:
+        oauth_account = (
+            self.session.query(OAuthAccount)
+            .filter(OAuthAccount.provider == provider, OAuthAccount.account_id == account_id)
+            .first()
+        )
+        if raise_exception:
+            raise OAuthAccountNotFound("Not found facebook oauth account")
+
+        return oauth_account
+
+    def get_all_by_user_id(self, user_id: int) -> List[OAuthAccount]:
+        return list(self.session.query(OAuthAccount).filter(OAuthAccount.user_id == user_id))

@@ -10,3 +10,5 @@ pyjwt
 psycopg2-binary
 passlib
 user-agents
+requests
+Authlib

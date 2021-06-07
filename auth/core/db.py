@@ -11,9 +11,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import backref, relationship, scoped_session, sessionmaker
 
-from core.enums import Action, DeviceType
+from core.enums import Action, DeviceType, OAuthProvider
 
 session = scoped_session(sessionmaker(autocommit=False, autoflush=False))
 
@@ -53,6 +53,25 @@ class RefreshToken(Base):
     token = Column(String, index=True, nullable=False)
     access_token = Column(String, index=True, nullable=False)
     exp = Column(DateTime, nullable=False)
+
+
+class OAuthAccount(Base):
+    __tablename__ = "oauth_account"
+    __table_args__ = (UniqueConstraint("account_id", "provider", name="social_pk"),)
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    user = relationship(User, backref=backref("oauth_accounts", lazy=True))
+
+    account_id = Column(String, nullable=False)
+    provider = Column(ENUM(OAuthProvider), nullable=False)
+
+    access_token = Column(String, nullable=False)
+    refresh_token = Column(String, nullable=True)
+    exp = Column(DateTime, nullable=False)
+
+    def __repr__(self):
+        return f"<OAuthAccount {self.account_id} - {self.provider}>"
 
 
 def create_partition(target, connection, **kw) -> None:

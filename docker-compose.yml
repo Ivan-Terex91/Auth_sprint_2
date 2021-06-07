@@ -28,6 +28,8 @@ services:
       POSTGRES_DSN: ${POSTGRES_DSN}
       REDIS_DSN: ${REDIS_DSN}
       SECRET_KEY: ${SECRET_KEY}
+      OAUTH_FACEBOOK_CLIENT_ID: ${OAUTH_FACEBOOK_CLIENT_ID}
+      OAUTH_FACEBOOK_CLIENT_SECRET: ${OAUTH_FACEBOOK_CLIENT_SECRET}
     networks:
       - ymp_network
     volumes:

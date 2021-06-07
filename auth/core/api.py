@@ -8,6 +8,15 @@ from core.exceptions import AuthError
 from services import services
 
 
+def get_current_user():
+    token = request.headers.get("TOKEN")
+    if not token:
+        return None
+
+    user_data = services.token_service.decode_access_token(token)
+    return services.user.get(user_data.user_id)
+
+
 def login_required(func):
     @wraps(func)
     def decorated_view(*args, **kwargs):

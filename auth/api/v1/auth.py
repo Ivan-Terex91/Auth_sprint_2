@@ -7,7 +7,7 @@ from api.v1.models.auth import (
     RefreshTokensResponseModel,
     SignupResponseModel,
 )
-from api.v1.models.users import LoginRequestModel, UserModel
+from api.v1.models.users import LoginRequestModel
 from core.api import Resource, login_required
 
 authorizations = {

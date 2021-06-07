@@ -17,7 +17,7 @@ class UserService:
         user = self.session.query(User).get({"id": user_id})
         return user
 
-    def create(self, **created_data):
+    def create(self, **created_data) -> User:
         """Создание нового пользователя"""
 
         if self.session.query(User).filter(User.email == created_data["email"]).first():
@@ -26,6 +26,8 @@ class UserService:
         user = User(**created_data)
         user.password = self.get_hash_password(user.password)
         self.session.add(user)
+        self.session.flush()
+        return user
 
     def put(self, user_id: UUID, **updated_data) -> Optional[User]:
         """Редактирование пользователя"""

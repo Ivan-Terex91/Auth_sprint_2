@@ -11,3 +11,7 @@ class DeviceType(Enum):
     mobile = "mobile"
     tablet = "tablet"
     undefined = "undefined"
+
+
+class OAuthProvider(Enum):
+    facebook = "facebook"
