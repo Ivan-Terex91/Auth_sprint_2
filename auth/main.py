@@ -5,6 +5,7 @@ from redis import Redis
 from api import api
 from api.staff.v1.auth import ns as staff_auth_ns
 from api.v1.auth import ns as auth_ns
+from api.v1.authorization import ns as authorization_ns
 from api.v1.oauth import ns as oauth_ns
 from api.v1.users import ns as profile_ns
 from core.db import init_session
@@ -19,6 +20,10 @@ class Settings(BaseSettings):
 
     oauth_facebook_client_id: str
     oauth_facebook_client_secret: str
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
 def create_app():
@@ -46,6 +51,7 @@ def create_app():
     api.add_namespace(auth_ns, "/api/v1/auth")
     api.add_namespace(oauth_ns, "/api/v1/oauth")
     api.add_namespace(staff_auth_ns, "/staff/api/v1/auth")
+    api.add_namespace(authorization_ns, "/api/v1/authorization")
 
     services = Services(session, redis, settings.secret_key)
     app.extensions["services"] = services

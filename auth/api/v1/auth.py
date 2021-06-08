@@ -1,3 +1,5 @@
+from datetime import date
+
 from flask import g, request
 from flask_restx import Namespace
 
@@ -28,7 +30,11 @@ class SignupView(Resource):
     @ns.response(201, description="Successfully signup in", model=SignupResponseModel)
     def post(self):
         """Signup new user"""
-        self.services.user.create(**self.api.payload)
+        user = self.services.user.create(**self.api.payload)
+        self.services.authorization_service.add_role_to_user(
+            user_id=user.id, role_title="authenticated"
+        )
+
         return {"message": "Successfully signup in"}, 201
 
 
@@ -46,9 +52,23 @@ class LoginView(Resource):
         )
         if not user:
             return {"message": "User not found"}, 404
+
+        if user.birthdate:
+            if (date.today().year - user.birthdate.year) >= 18:
+                self.services.authorization_service.add_role_to_user(
+                    user_id=user.id, role_title="adult"
+                )
         user_id = user.id
         user_agent = request.headers.get("User-Agent")
-        access_token, refresh_token = self.services.token_service.create_tokens(user_id)
+        user_roles_permissions = self.services.authorization_service.get_user_roles_permissions(
+            user_id=user_id
+        )
+
+        access_token, refresh_token = self.services.token_service.create_tokens(
+            user_id,
+            user_roles_permissions["user_roles"],
+            user_roles_permissions["user_permissions"],
+        )
         self.services.user_history.insert_entry(
             user_id=user_id, action="login", user_agent=user_agent
         )

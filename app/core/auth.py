@@ -15,7 +15,7 @@ class AuthClient:
     def __init__(self, base_url):
         self.base_url = base_url
 
-    async def check_token(self, token: str):
+    async def check_token(self, token):
         async with httpx.AsyncClient(base_url=self.base_url) as client:
             return await client.post("/staff/api/v1/auth/check_token/", json={"token": token})
 
@@ -31,6 +31,8 @@ class User(BaseModel):
     user_id: UUID4
     first_name: str
     last_name: str
+    user_roles: list
+    user_permissions: list
 
 
 api_token_scheme = APIKeyHeader(name="TOKEN")
@@ -57,6 +59,8 @@ async def get_current_user(
 
     return User(
         user_id=data["user_id"],
+        user_roles=data["user_roles"],
+        user_permissions=data["user_permissions"],
         first_name=data["first_name"],
         last_name=data["last_name"],
     )

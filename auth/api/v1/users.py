@@ -1,3 +1,5 @@
+import datetime
+
 from flask import request
 from flask_restx import Namespace
 
@@ -40,6 +42,15 @@ class UserProfile(Resource):
         token = request.headers.get("TOKEN")
         user_data = self.services.token_service.decode_access_token(token)
         updated_user = self.services.user.put(user_data.user_id, **self.api.payload)
+        if "birthdate" in self.api.payload:
+            if (
+                datetime.date.today().year
+                - datetime.datetime.strptime(self.api.payload["birthdate"], "%Y-%m-%d").year
+            ) >= 18:
+                self.services.authorization_service.add_role_to_user(
+                    user_id=user_data.user_id, role_title="adult"
+                )
+
         if not updated_user:
             return {"message": "User not found"}, 404
         return {"message": "Successfully updated user profile"}, 200

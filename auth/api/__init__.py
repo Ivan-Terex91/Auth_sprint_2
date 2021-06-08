@@ -1,6 +1,6 @@
 from flask_restx import Api
 
-from core.exceptions import AuthError, EmailUsedError, NotFound
+from core.exceptions import AuthError, AuthorizationError, EmailUsedError, NotFound
 
 api = Api(title="Auth")
 
@@ -18,3 +18,8 @@ def handle_permission_error(error):
 @api.errorhandler(EmailUsedError)
 def handle_email_used_error(error):
     return {"message": f"{error}"}, 409
+
+
+@api.errorhandler(AuthorizationError)
+def handle_authorization_error(error):
+    return {"message": f"{error!s}"}, 403

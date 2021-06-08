@@ -1,3 +1,5 @@
+import json
+
 from flask import g
 from flask_restx import Namespace
 
@@ -14,9 +16,10 @@ class CheckToken(Resource):
     def post(self):
         token = self.api.payload["token"]
         access_token = self.services.token_service.decode_access_token(token)
-
         return {
             "user_id": str(access_token.user_id),
+            "user_roles": access_token.user_roles,
+            "user_permissions": access_token.user_permissions,
             "first_name": "first",
             "last_name": "last",
         }

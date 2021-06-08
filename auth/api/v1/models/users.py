@@ -10,6 +10,7 @@ UserModel = api.model(
         "id": fields.String(readonly=True, as_uuid=True),
         "first_name": fields.String(),
         "last_name": fields.String(),
+        "birthdate": fields.Date(),
         "email": fields.String(),
     },
 )

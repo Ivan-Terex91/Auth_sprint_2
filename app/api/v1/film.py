@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import UUID4, BaseModel
 
 from core.auth import get_current_user
+from core.authorization import authorize_user, is_adult_user
 from services.film import FilmService, get_film_service
 
 router = APIRouter()
@@ -44,11 +45,14 @@ class FilmListModel(BaseModel):
     imdb_rating: Optional[float]
 
 
-@router.get("/{film_id:uuid}/", response_model=FilmDetailsModel)
+@router.get(
+    "/{film_id:uuid}/", response_model=FilmDetailsModel, dependencies=[Depends(authorize_user)]
+)
 async def film_details(
     film_id: UUID,
     film_service: FilmService = Depends(get_film_service),
     current_user=Depends(get_current_user),
+    adult_user=Depends(is_adult_user),
 ) -> FilmDetailsModel:
     film = await film_service.get_by_id(film_id)
     if not film:
@@ -66,7 +70,7 @@ async def film_details(
     )
 
 
-@router.get("/", response_model=List[FilmListModel])
+@router.get("/", response_model=List[FilmListModel], dependencies=[Depends(authorize_user)])
 async def film_list(
     sort: FilmOrderingEnum = Query(default=FilmOrderingEnum.imdb_rating__desc),
     page_number: int = Query(default=1, ge=1, alias="page[number]"),
@@ -74,6 +78,7 @@ async def film_list(
     filter_genre_id: UUID = Query(None, alias="filter[genre]"),
     film_service: FilmService = Depends(get_film_service),
     current_user=Depends(get_current_user),
+    adult_user=Depends(is_adult_user),
 ):
     sort_value, sort_order = sort.name.split("__")
 
@@ -91,13 +96,14 @@ async def film_list(
     return films_list
 
 
-@router.get("/search/", response_model=List[FilmListModel])
+@router.get("/search/", response_model=List[FilmListModel], dependencies=[Depends(authorize_user)])
 async def film_search(
     page: Optional[int] = 1,
     size: Optional[int] = 50,
     query: Optional[str] = "",
     film_service: FilmService = Depends(get_film_service),
     current_user=Depends(get_current_user),
+    adult_user=Depends(is_adult_user),
 ) -> List[FilmListModel]:
     films = await film_service.search(page=page, size=size, match_obj=query)
     return [FilmListModel(**film) for film in films]

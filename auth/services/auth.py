@@ -1,3 +1,4 @@
+import json
 import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -34,6 +35,8 @@ class OAuthAccountNotFound(NotFound):
 class AccessToken:
     token: str
     user_id: UUID
+    user_roles: list
+    user_permissions: list
     exp: datetime
     iat: datetime
 
@@ -44,7 +47,9 @@ class TokenService:
         self.redis = redis
         self.secret_key = secret_key
 
-    def create_tokens(self, user_id: UUID) -> Tuple[str, str]:
+    def create_tokens(
+        self, user_id: UUID, user_roles: list, user_permissions: list
+    ) -> Tuple[str, str]:
         """
         Создание новой пары access, refresh токенов
         """
@@ -52,6 +57,8 @@ class TokenService:
         now = datetime.now(tz=timezone.utc)
         payload = {
             "user_id": str(user_id),
+            "user_roles": json.dumps(user_roles),
+            "user_permissions": json.dumps(user_permissions),
             "iat": now,
             "exp": now + timedelta(seconds=ACCESS_TOKEN_INTERVAL),
         }
@@ -86,6 +93,8 @@ class TokenService:
         access_token = AccessToken(
             token=token,
             user_id=payload["user_id"],
+            user_roles=json.loads(payload["user_roles"]),
+            user_permissions=json.loads(payload["user_permissions"]),
             exp=datetime.fromtimestamp(payload["exp"], tz=timezone.utc),
             iat=datetime.fromtimestamp(payload["iat"], tz=timezone.utc),
         )
@@ -102,10 +111,12 @@ class TokenService:
         access_token = self.decode_access_token(refresh_token.access_token, verify_exp=False)
 
         user_id = refresh_token.user_id
+        user_roles = access_token.user_roles
+        user_permissions = access_token.user_permissions
         self.session.delete(refresh_token)
         self._revoke_token(access_token)
 
-        return self.create_tokens(user_id)
+        return self.create_tokens(user_id, user_roles, user_permissions)
 
     def remove_tokens(self, access_token: AccessToken):
         """

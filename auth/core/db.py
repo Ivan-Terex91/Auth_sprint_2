@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import (
     Column,
+    Date,
     DateTime,
     ForeignKey,
     PrimaryKeyConstraint,
@@ -13,7 +14,12 @@ from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship, scoped_session, sessionmaker
 
-from core.enums import Action, DeviceType, OAuthProvider
+from core.enums import Action, DeviceType, OAuthProvider, Permissions, Roles
+from core.insert_data import (
+    insert_permissions,
+    insert_user_role_permissions,
+    insert_user_roles,
+)
 
 session = scoped_session(sessionmaker(autocommit=False, autoflush=False))
 
@@ -21,6 +27,8 @@ Base = declarative_base()
 
 
 class User(Base):
+    """Таблица пользователей"""
+
     __tablename__ = "user"
 
     id = Column(
@@ -32,8 +40,10 @@ class User(Base):
     )
     first_name = Column(String)
     last_name = Column(String)
+    birthdate = Column(Date)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
+    role = relationship("UserRole")
 
     def __repr__(self):
         return f"<User {self.first_name} - {self.last_name}>"
@@ -75,7 +85,6 @@ class OAuthAccount(Base):
 
 
 def create_partition(target, connection, **kw) -> None:
-
     connection.execute(
         """CREATE TABLE IF NOT EXISTS "history_at_pc" PARTITION OF "history" FOR VALUES IN ('pc')"""
     )
@@ -115,6 +124,69 @@ class History(Base):
 
     def __repr__(self):
         return f"{self.user_id} - {self.action} - {self.datetime} - {self.device_type}"
+
+
+class Role(Base):
+    """Таблица ролей"""
+
+    __tablename__ = "role"
+
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False
+    )
+    title = Column(ENUM(Roles), nullable=False)
+    permission = relationship("RolePermission")
+
+    __table_args__ = {
+        "listeners": [("after_create", insert_user_roles)],
+    }
+
+
+class Permission(Base):
+    """Таблица правил"""
+
+    __tablename__ = "permission"
+
+    id = Column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False
+    )
+    title = Column(ENUM(Permissions), nullable=False)
+
+    __table_args__ = {
+        "listeners": [("after_create", insert_permissions)],
+    }
+
+
+class RolePermission(Base):
+    """Таблица правил в ролях"""
+
+    __tablename__ = "role_permission"
+
+    role_id = Column(
+        UUID(as_uuid=True), ForeignKey("role.id", ondelete="CASCADE"), primary_key=True
+    )
+    permission_id = Column(
+        UUID(as_uuid=True), ForeignKey("permission.id", ondelete="CASCADE"), primary_key=True
+    )
+    perm = relationship("Permission")
+
+    __table_args__ = {
+        "listeners": [("after_create", insert_user_role_permissions)],
+    }
+
+
+class UserRole(Base):
+    """Таблица ролей пользователей"""
+
+    __tablename__ = "user_role"
+
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
+    )
+    role_id = Column(
+        UUID(as_uuid=True), ForeignKey("role.id", ondelete="CASCADE"), primary_key=True
+    )
+    roles = relationship("Role")
 
 
 def init_session(dsn):

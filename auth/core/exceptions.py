@@ -8,3 +8,7 @@ class AuthError(Exception):
 
 class EmailUsedError(Exception):
     pass
+
+
+class AuthorizationError(Exception):
+    pass
