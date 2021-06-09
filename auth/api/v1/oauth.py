@@ -100,6 +100,10 @@ class OAuthFacebookCompleteResource(Resource):
             email=account_email,
             password=pwd.genphrase(length=6),
         )
+        self.services.authorization_service.add_role_to_user(
+            user_id=user.id, role_title="authenticated"
+        )
+
         self.services.oauth_account.create(
             user_id=user.id,
             provider=OAuthProvider.facebook,
@@ -107,5 +111,13 @@ class OAuthFacebookCompleteResource(Resource):
             access_token=access_token,
             exp=exp,
         )
-        access_token, refresh_token = self.services.token_service.create_tokens(user.id)
+
+        user_roles_permissions = self.services.authorization_service.get_user_roles_permissions(
+            user_id=user.id
+        )
+        access_token, refresh_token = self.services.token_service.create_tokens(
+            user.id,
+            user_roles_permissions["user_roles"],
+            user_roles_permissions["user_permissions"],
+        )
         return {"access_token": access_token, "refresh_token": refresh_token}, 200
