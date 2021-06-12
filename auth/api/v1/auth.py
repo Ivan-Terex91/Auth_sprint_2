@@ -1,5 +1,3 @@
-from datetime import date
-
 from flask import g, request
 from flask_restx import Namespace
 
@@ -53,11 +51,6 @@ class LoginView(Resource):
         if not user:
             return {"message": "User not found"}, 404
 
-        if user.birthdate:
-            if (date.today().year - user.birthdate.year) >= 18:
-                self.services.authorization_service.add_role_to_user(
-                    user_id=user.id, role_title="adult"
-                )
         user_id = user.id
         user_agent = request.headers.get("User-Agent")
         user_roles_permissions = self.services.authorization_service.get_user_roles_permissions(
@@ -65,9 +58,11 @@ class LoginView(Resource):
         )
 
         access_token, refresh_token = self.services.token_service.create_tokens(
-            user_id,
-            user_roles_permissions["user_roles"],
-            user_roles_permissions["user_permissions"],
+            user_id=user_id,
+            user_roles=user_roles_permissions["user_roles"],
+            user_permissions=user_roles_permissions["user_permissions"],
+            country=user.country,
+            birthdate=user.birthdate,
         )
         self.services.user_history.insert_entry(
             user_id=user_id, action="login", user_agent=user_agent

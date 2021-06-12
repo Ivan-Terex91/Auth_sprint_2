@@ -25,19 +25,11 @@ class AuthorizationService:
             .filter(RolePermission.role_id.in_((role[0] for role in user_roles)))
             .all()
         )
-        return {
-            "user_roles": [role[1].value for role in user_roles],
-            "user_permissions": [perm[0].value for perm in user_permissions],
-        }
 
-    def get_user_roles(self, user_id: UUID):
-        """Получение ролей пользователя"""
-        user_roles = (
-            self.session.query(Role.title).join(UserRole).filter(UserRole.user_id == user_id).all()
-        )
-        if user_roles:
-            return {"roles": ", ".join([role[0].value for role in user_roles])}
-        return {"roles": "anonymous"}
+        return {
+            "user_roles": [role[1] for role in user_roles] or ["anonymous"],
+            "user_permissions": [perm[0] for perm in user_permissions],
+        }
 
     def add_role_to_user(self, user_id: UUID, role_title: str):
         """Добавление роли пользователю"""

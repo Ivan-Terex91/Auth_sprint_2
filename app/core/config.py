@@ -18,5 +18,7 @@ ELASTIC_DSN = os.getenv("ELASTIC_DSN", "http://localhost:9200/")
 # Корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+POSTGRES_DSN = os.getenv("POSTGRES_DSN", "postgresql://postgres:postgres@postgres:5432")
+
 # Url для сервиса аутентификации пользователей
-AUTH_URL = os.getenv("AUTH_URL", "http://auth:80/")
+AUTH_URL = os.getenv("AUTH_URL", "http://auth:8001/")

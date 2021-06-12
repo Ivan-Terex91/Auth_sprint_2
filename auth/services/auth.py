@@ -37,6 +37,8 @@ class AccessToken:
     user_id: UUID
     user_roles: list
     user_permissions: list
+    country: str
+    birthdate: str
     exp: datetime
     iat: datetime
 
@@ -48,7 +50,7 @@ class TokenService:
         self.secret_key = secret_key
 
     def create_tokens(
-        self, user_id: UUID, user_roles: list, user_permissions: list
+        self, user_id: UUID, user_roles: list, user_permissions: list, country: str, birthdate: str
     ) -> Tuple[str, str]:
         """
         Создание новой пары access, refresh токенов
@@ -59,6 +61,8 @@ class TokenService:
             "user_id": str(user_id),
             "user_roles": json.dumps(user_roles),
             "user_permissions": json.dumps(user_permissions),
+            "country": country,
+            "birthdate": birthdate,
             "iat": now,
             "exp": now + timedelta(seconds=ACCESS_TOKEN_INTERVAL),
         }
@@ -95,6 +99,8 @@ class TokenService:
             user_id=payload["user_id"],
             user_roles=json.loads(payload["user_roles"]),
             user_permissions=json.loads(payload["user_permissions"]),
+            country=payload["country"],
+            birthdate=payload["birthdate"],
             exp=datetime.fromtimestamp(payload["exp"], tz=timezone.utc),
             iat=datetime.fromtimestamp(payload["iat"], tz=timezone.utc),
         )
@@ -113,10 +119,12 @@ class TokenService:
         user_id = refresh_token.user_id
         user_roles = access_token.user_roles
         user_permissions = access_token.user_permissions
+        country = access_token.country
+        birthdate = access_token.birthdate
         self.session.delete(refresh_token)
         self._revoke_token(access_token)
 
-        return self.create_tokens(user_id, user_roles, user_permissions)
+        return self.create_tokens(user_id, user_roles, user_permissions, country, birthdate)
 
     def remove_tokens(self, access_token: AccessToken):
         """

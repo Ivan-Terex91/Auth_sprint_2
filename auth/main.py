@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from redis import Redis

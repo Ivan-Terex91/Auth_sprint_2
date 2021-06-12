@@ -28,8 +28,10 @@ class GetUserRoles(Resource):
         user = self.services.user.get(user_id=user_id)
         if not user:
             return {"message": "User not found"}, 404
-        user_roles = self.services.authorization_service.get_user_roles(user_id=user_id)
-        return user_roles, 200
+        user_roles_permissions = self.services.authorization_service.get_user_roles_permissions(
+            user_id=user_id
+        )
+        return {"roles": ", ".join(user_roles_permissions["user_roles"])}, 200
 
 
 @ns.route("/user_role/")
@@ -46,6 +48,7 @@ class ChangeUserRole(Resource):
         user = self.services.user.get(user_id=self.api.payload["user_id"])
         if not user:
             return {"message": "User not found"}, 404
+
         self.services.authorization_service.add_role_to_user(
             user_id=self.api.payload["user_id"], role_title=self.api.payload["role_title"]
         )

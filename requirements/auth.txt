@@ -12,3 +12,4 @@ passlib
 user-agents
 requests
 Authlib
+pydantic[dotenv]

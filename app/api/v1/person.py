@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import UUID4, BaseModel
 
 from core.auth import get_current_user
-from core.authorization import authorize_user
+from core.authorization import AuthorizedUser
 from services.person import PersonService, get_person_service
 
 router = APIRouter()
@@ -39,7 +39,11 @@ class PersonFilm(BaseModel):
     roles: List[RoleType]
 
 
-@router.get("/{person_id:uuid}/", response_model=Person, dependencies=[Depends(authorize_user)])
+@router.get(
+    "/{person_id:uuid}/",
+    response_model=Person,
+    dependencies=[Depends(AuthorizedUser("movies_get_person"))],
+)
 async def person_details(
     person_id: UUID,
     person_service: PersonService = Depends(get_person_service),
@@ -54,7 +58,7 @@ async def person_details(
 @router.get(
     "/{person_id:uuid}/film/",
     response_model=List[PersonFilm],
-    dependencies=[Depends(authorize_user)],
+    dependencies=[Depends(AuthorizedUser("movies_get_person_list"))],
 )
 async def person_film_list(
     person_id: UUID,
@@ -65,7 +69,11 @@ async def person_film_list(
     return [PersonFilm(**film) for film in films]
 
 
-@router.get("/search/", response_model=List[Person], dependencies=[Depends(authorize_user)])
+@router.get(
+    "/search/",
+    response_model=List[Person],
+    dependencies=[Depends(AuthorizedUser("movies_search_person"))],
+)
 async def person_search(
     page: Optional[int] = 1,
     size: Optional[int] = 50,

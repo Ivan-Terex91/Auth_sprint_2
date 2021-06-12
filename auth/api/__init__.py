@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask_restx import Api
 
 from core.exceptions import AuthError, AuthorizationError, EmailUsedError, NotFound
@@ -7,19 +9,19 @@ api = Api(title="Auth")
 
 @api.errorhandler(NotFound)
 def handle_not_found_error(error):
-    return {"message": f"{error!s}"}, 404
+    return {"message": f"{error!s}"}, HTTPStatus.NOT_FOUND
 
 
 @api.errorhandler(AuthError)
 def handle_permission_error(error):
-    return {"message": f"{error!s}"}, 401
+    return {"message": f"{error!s}"}, HTTPStatus.UNAUTHORIZED
 
 
 @api.errorhandler(EmailUsedError)
 def handle_email_used_error(error):
-    return {"message": f"{error}"}, 409
+    return {"message": f"{error}"}, HTTPStatus.CONFLICT
 
 
 @api.errorhandler(AuthorizationError)
 def handle_authorization_error(error):
-    return {"message": f"{error!s}"}, 403
+    return {"message": f"{error!s}"}, HTTPStatus.FORBIDDEN

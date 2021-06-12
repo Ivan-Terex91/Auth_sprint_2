@@ -14,7 +14,7 @@ from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship, scoped_session, sessionmaker
 
-from core.enums import Action, DeviceType, OAuthProvider, Permissions, Roles
+from core.enums import Action, DeviceType, OAuthProvider
 from core.insert_data import (
     insert_permissions,
     insert_user_role_permissions,
@@ -41,6 +41,7 @@ class User(Base):
     first_name = Column(String)
     last_name = Column(String)
     birthdate = Column(Date)
+    country = Column(String, default="Russia")
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
     role = relationship("UserRole")
@@ -134,12 +135,15 @@ class Role(Base):
     id = Column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False
     )
-    title = Column(ENUM(Roles), nullable=False)
+    title = Column(String, nullable=False)
     permission = relationship("RolePermission")
 
-    __table_args__ = {
-        "listeners": [("after_create", insert_user_roles)],
-    }
+    __table_args__ = (
+        UniqueConstraint(title),
+        {
+            "listeners": [("after_create", insert_user_roles)],
+        },
+    )
 
 
 class Permission(Base):
@@ -150,11 +154,14 @@ class Permission(Base):
     id = Column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False
     )
-    title = Column(ENUM(Permissions), nullable=False)
+    title = Column(String, nullable=False)
 
-    __table_args__ = {
-        "listeners": [("after_create", insert_permissions)],
-    }
+    __table_args__ = (
+        UniqueConstraint(title),
+        {
+            "listeners": [("after_create", insert_permissions)],
+        },
+    )
 
 
 class RolePermission(Base):

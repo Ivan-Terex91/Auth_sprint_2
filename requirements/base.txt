@@ -4,3 +4,4 @@ aioredis
 elasticsearch[async]
 orjson
 httpx
+psycopg2-binary

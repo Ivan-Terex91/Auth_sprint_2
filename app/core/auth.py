@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import httpx
 from fastapi import Depends, HTTPException, status
@@ -31,6 +32,8 @@ class User(BaseModel):
     user_id: UUID4
     first_name: str
     last_name: str
+    birthdate: Optional[str]
+    country: str
     user_roles: list
     user_permissions: list
 
@@ -61,6 +64,8 @@ async def get_current_user(
         user_id=data["user_id"],
         user_roles=data["user_roles"],
         user_permissions=data["user_permissions"],
+        country=data["country"],
+        birthdate=data["birthdate"],
         first_name=data["first_name"],
         last_name=data["last_name"],
     )

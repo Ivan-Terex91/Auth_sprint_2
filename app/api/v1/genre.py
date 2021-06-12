@@ -1,5 +1,4 @@
 from enum import Enum
-from functools import partial
 from http import HTTPStatus
 from typing import List, Optional
 from uuid import UUID
@@ -8,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import UUID4, BaseModel
 
 from core.auth import get_current_user
-from core.authorization import authorize_user
+from core.authorization import AuthorizedUser
 from services.genre import GenreService, get_genre_service
 
 router = APIRouter()
@@ -30,7 +29,11 @@ class SortFields(Enum):
     name__desc = "-name"
 
 
-@router.get("/{genre_id:uuid}/", response_model=Genre, dependencies=[Depends(authorize_user)])
+@router.get(
+    "/{genre_id:uuid}/",
+    response_model=Genre,
+    dependencies=[Depends(AuthorizedUser("movies_get_genre"))],
+)
 async def genre_details(
     genre_id: UUID,
     genre_service: GenreService = Depends(get_genre_service),
@@ -42,7 +45,9 @@ async def genre_details(
     return Genre(id=genre.id, name=genre.name)
 
 
-@router.get("/", response_model=List[Genre], dependencies=[Depends(authorize_user)])
+@router.get(
+    "/", response_model=List[Genre], dependencies=[Depends(AuthorizedUser("movies_get_genre_list"))]
+)
 async def genre_list(
     page: Optional[int] = 1,
     size: Optional[int] = 50,

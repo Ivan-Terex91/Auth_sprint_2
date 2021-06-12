@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import UUID4, BaseModel
 
 from core.auth import get_current_user
-from core.authorization import authorize_user, is_adult_user
+from core.authorization import AuthorizedUser, is_adult_user
 from services.film import FilmService, get_film_service
 
 router = APIRouter()
@@ -46,7 +46,9 @@ class FilmListModel(BaseModel):
 
 
 @router.get(
-    "/{film_id:uuid}/", response_model=FilmDetailsModel, dependencies=[Depends(authorize_user)]
+    "/{film_id:uuid}/",
+    response_model=FilmDetailsModel,
+    dependencies=[Depends(AuthorizedUser("movies_get_film"))],
 )
 async def film_details(
     film_id: UUID,
@@ -70,7 +72,11 @@ async def film_details(
     )
 
 
-@router.get("/", response_model=List[FilmListModel], dependencies=[Depends(authorize_user)])
+@router.get(
+    "/",
+    response_model=List[FilmListModel],
+    dependencies=[Depends(AuthorizedUser("movies_get_film_list"))],
+)
 async def film_list(
     sort: FilmOrderingEnum = Query(default=FilmOrderingEnum.imdb_rating__desc),
     page_number: int = Query(default=1, ge=1, alias="page[number]"),
@@ -96,7 +102,11 @@ async def film_list(
     return films_list
 
 
-@router.get("/search/", response_model=List[FilmListModel], dependencies=[Depends(authorize_user)])
+@router.get(
+    "/search/",
+    response_model=List[FilmListModel],
+    dependencies=[Depends(AuthorizedUser("movies_search_film"))],
+)
 async def film_search(
     page: Optional[int] = 1,
     size: Optional[int] = 50,

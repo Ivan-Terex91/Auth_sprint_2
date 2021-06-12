@@ -1,6 +1,3 @@
-import json
-
-from flask import g
 from flask_restx import Namespace
 
 from api.staff.v1.models.auth import CheckTokenModel, CheckTokenResponseModel
@@ -20,6 +17,8 @@ class CheckToken(Resource):
             "user_id": str(access_token.user_id),
             "user_roles": access_token.user_roles,
             "user_permissions": access_token.user_permissions,
+            "country": access_token.country,
+            "birthdate": access_token.birthdate,
             "first_name": "first",
             "last_name": "last",
         }
