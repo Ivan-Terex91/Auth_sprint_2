@@ -171,30 +171,20 @@ class OAuthService:
     def delete(self, oauth_account: OAuthAccount):
         return self.session.delete(oauth_account)
 
-    def get_by_user_id(
-        self, provider: OAuthProvider, user_id: str, raise_exception=False
-    ) -> Optional[OAuthAccount]:
+    def get_by_user_id(self, provider: OAuthProvider, user_id: str) -> Optional[OAuthAccount]:
         oauth_account = (
             self.session.query(OAuthAccount)
             .filter(OAuthAccount.provider == provider, OAuthAccount.user_id == user_id)
             .first()
         )
-        if raise_exception:
-            raise OAuthAccountNotFound("Not found facebook oauth account")
-
         return oauth_account
 
-    def get_by_account_id(
-        self, provider: OAuthProvider, account_id: str, raise_exception=False
-    ) -> Optional[OAuthAccount]:
+    def get_by_account_id(self, provider: OAuthProvider, account_id: str) -> Optional[OAuthAccount]:
         oauth_account = (
             self.session.query(OAuthAccount)
             .filter(OAuthAccount.provider == provider, OAuthAccount.account_id == account_id)
             .first()
         )
-        if raise_exception:
-            raise OAuthAccountNotFound("Not found facebook oauth account")
-
         return oauth_account
 
     def get_all_by_user_id(self, user_id: int) -> List[OAuthAccount]:
