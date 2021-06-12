@@ -8,6 +8,7 @@ from api import api
 from api.staff.v1.auth import ns as staff_auth_ns
 from api.v1.auth import ns as auth_ns
 from api.v1.authorization import ns as authorization_ns
+from api.v1.captcha import ns as captcha_ns
 from api.v1.oauth import ns as oauth_ns
 from api.v1.users import ns as profile_ns
 from core.db import init_session
@@ -54,6 +55,7 @@ def create_app():
     api.add_namespace(oauth_ns, "/api/v1/oauth")
     api.add_namespace(staff_auth_ns, "/staff/api/v1/auth")
     api.add_namespace(authorization_ns, "/api/v1/authorization")
+    api.add_namespace(captcha_ns, "/api/v1/captcha")
 
     services = Services(session, redis, settings.secret_key)
     app.extensions["services"] = services

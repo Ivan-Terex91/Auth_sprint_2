@@ -13,3 +13,4 @@ user-agents
 requests
 Authlib
 pydantic[dotenv]
+multicolorcaptcha

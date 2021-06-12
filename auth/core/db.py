@@ -5,6 +5,7 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    LargeBinary,
     PrimaryKeyConstraint,
     String,
     UniqueConstraint,
@@ -194,6 +195,21 @@ class UserRole(Base):
         UUID(as_uuid=True), ForeignKey("role.id", ondelete="CASCADE"), primary_key=True
     )
     roles = relationship("Role")
+
+
+class CaptchaChallenge(Base):
+    __tablename__ = "captcha"
+
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        unique=True,
+        nullable=False,
+    )
+    payload = Column(LargeBinary, nullable=False)
+    exp = Column(DateTime, nullable=False)
+    hash_key = Column(String, nullable=False, index=True)
 
 
 def init_session(dsn):

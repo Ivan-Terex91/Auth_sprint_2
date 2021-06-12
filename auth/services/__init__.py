@@ -3,6 +3,7 @@ from werkzeug.local import LocalProxy
 
 from services.auth import OAuthService, TokenService
 from services.authorization import AuthorizationService
+from services.captcha import CaptchaService
 from services.history import UserHistoryService
 from services.users import UserService
 
@@ -18,3 +19,4 @@ class Services:
         self.token_service = TokenService(session, redis, secret_key)
         self.authorization_service = AuthorizationService(session)
         self.oauth_account = OAuthService(session)
+        self.captcha = CaptchaService(session)

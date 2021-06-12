@@ -4,7 +4,7 @@ from flask import g, request
 from flask_restx import Resource as RestResource
 
 from core.db import session
-from core.exceptions import AuthError, AuthorizationError
+from core.exceptions import AuthError, AuthorizationError, BadRequestError
 from services import services
 
 
@@ -69,6 +69,19 @@ def is_superuser(func):
             return func(*args, **kwargs)
 
         raise AuthorizationError("Forbidden, you don't have permission to access")
+
+    return decorator_view
+
+
+def captcha_challenge(func):
+    @wraps(func)
+    def decorator_view(*args, **kwargs):
+        hash_key = request.headers.get("CAPTCHA_HASH_KEY")
+        if not hash_key:
+            raise BadRequestError("Captcha hash key is required")
+
+        services.captcha.verify(hash_key)
+        return func(*args, **kwargs)
 
     return decorator_view
 

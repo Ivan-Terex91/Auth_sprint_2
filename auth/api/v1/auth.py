@@ -8,7 +8,7 @@ from api.v1.models.auth import (
     SignupResponseModel,
 )
 from api.v1.models.users import LoginRequestModel
-from core.api import Resource, login_required
+from core.api import Resource, captcha_challenge, login_required
 
 authorizations = {
     "api_key": {
@@ -20,8 +20,14 @@ authorizations = {
 ns = Namespace("Auth Namespace", authorizations=authorizations, security="api_key")
 
 
+signup_parser = ns.parser()
+signup_parser.add_argument("CAPTCHA_HASH_KEY", location="headers")
+
+
 @ns.route("/signup/")
 class SignupView(Resource):
+    @captcha_challenge
+    @ns.param("CAPTCHA_HASH_KEY", _in="header")
     @ns.expect(LoginRequestModel, validate=True)
     @ns.response(409, description="This email address is already in use")
     @ns.response(400, description="Bad request")
